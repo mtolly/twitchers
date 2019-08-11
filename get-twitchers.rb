@@ -1,20 +1,42 @@
-#!/usr/local/bin/ruby
+#!/usr/bin/env ruby
 
-require 'twitch'
+require 'twitch-api'
 require 'json'
 
+ACCESS_TOKEN = '' # fill this in
+USER_ID = 0 # fill this in
+
 begin
-  twitch = Twitch.new({
-    client_id: 'INSERT: your Twitch app client id',
-    secret_key: 'INSERT: your Twitch app secret key',
-    redirect_uri: 'http://localhost:8888',
-    scope: ['user_read', 'channel_read']
-  })
-  twitch = Twitch.new access_token: 'INSERT: your Twitch access token'
-  streams = twitch.followed_streams[:body].parsed_response['streams']
-  if streams.nil?
-    raise Exception.new twitch.followed_streams[:body].parsed_response
+  twitch = Twitch::Client.new(access_token: ACCESS_TOKEN)
+
+  # first get all the followed streams
+  follow_chunks = []
+  page = nil
+  while true
+    streams = twitch.get_users_follows(from_id: USER_ID, first: 100, after: page)
+    ids = streams.data.map(&:to_id)
+    unless ids.empty?
+      follow_chunks << ids
+    end
+    if streams.pagination && !(streams.data.empty?)
+      page = streams.pagination['cursor']
+    else
+      break
+    end
   end
+
+  # then get stream info, which filters to only live ones
+  streams = []
+  follow_chunks.each do |chunk|
+    streams = streams + twitch.get_streams(user_id: chunk, first: 100).data.map do |stream|
+      {channel: {
+        display_name: stream.user_name,
+        status: stream.title,
+        url: "https://twitch.tv/#{stream.user_name}" # TODO get real url, non-ascii chars will probably break this
+      }}
+    end
+  end
+
   o = {streams: streams}
 rescue Exception => e
   o = {error: e.to_s}

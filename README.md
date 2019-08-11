@@ -8,10 +8,10 @@ Uses [Übersicht], [livestreamer], and [Colloquy].
 
 1. Install the 3 above programs.
 
-2. Install the [`twitch` Ruby gem](https://github.com/dustinlakin/twitch-rb).
+2. Install the [`twitch-api` Ruby gem](https://github.com/mauricew/ruby-twitch-api).
 
 3. [Create a Twitch API app](https://github.com/justintv/Twitch-API/blob/master/authentication.md).
-  You'll need to get the client ID, secret key, and access token.
+  You'll need to get the access token.
   You'll also need your [Twitch chat OAuth token](https://twitchapps.com/tmi/).
 
 4. Move `twitchers.coffee` to the Übersicht widgets folder,
